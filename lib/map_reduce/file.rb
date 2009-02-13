@@ -1,6 +1,6 @@
 class MapReduce
   module File
-    attr_accessor :offset, :queue_size, :locked_queue_wait, :empty_queue_wait, :rescan_when_complete, :vigilant, :lines_per_client
+    attr_accessor :offset, :queue_size, :locked_queue_wait, :empty_queue_wait, :rescan_when_complete, :vigilant, :lines_per_client, :update_file_name_block
     attr_reader :total
 
     class Client
@@ -67,6 +67,10 @@ private
           if @offset >= @total
             if @rescan_when_complete || @vigilant
               set_total
+            elsif !@update_file_name_block.nil?
+              input = @update_file_name_block.call
+              set_total = unless input.blank?
+              sleep 30 if input.blank?
             else
               begin
                 self.finished
