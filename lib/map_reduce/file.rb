@@ -1,6 +1,6 @@
 class MapReduce
   module File
-    attr_accessor :offset, :queue_size, :locked_queue_wait, :empty_queue_wait, :rescan_when_complete, :vigilant, :lines_per_client, :update_file_name_block
+    attr_accessor :offset, :queue_size, :locked_queue_wait, :empty_queue_wait, :rescan_when_complete, :vigilant, :lines_per_client, :update_file_object_block, :email_file_object
     attr_reader :total
 
     class Client
@@ -48,10 +48,10 @@ class MapReduce
       @time_spent_grabbing_objects += (Time.now - t)
       @num_objects_grabbed += 1
 
-      return lines.join
+      return lines.join, @email_file_object
     end
 
-private
+    private
     
     def set_total
       @total = ::File.size(input)
@@ -67,10 +67,22 @@ private
           if @offset >= @total
             if @rescan_when_complete || @vigilant
               set_total
-            elsif !@update_file_name_block.nil?
-              input = @update_file_name_block.call
-              set_total = unless input.blank?
-              sleep 30 if input.blank?
+            elsif !@update_file_object_block.nil?
+              @email_file_object.completed_at = Time.now
+              @email_file_object.save
+              @new_file_name = ""
+              @email_file_object = nil
+              begin
+                @email_file_object = @update_file_object_block.call
+                @new_file_name = @email_file_object.local_file_name unless @email_file_object.nil?
+                logger.info Time.now.to_s + " New file: " + @new_file_name unless @new_file_name.blank?
+                sleep 15
+              end while @new_file_name.blank?
+              @input = @new_file_name
+              @email_file_object.started_at = Time.now
+              @email_file_object.save
+              set_total
+              @offset = 0
             else
               begin
                 self.finished
