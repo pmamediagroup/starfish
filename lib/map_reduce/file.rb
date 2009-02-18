@@ -72,6 +72,7 @@ class MapReduce
               @email_file_object.save
               @new_file_name = ""
               @email_file_object = nil
+              @num_objects_grabbed = 0
               begin
                 @email_file_object = @update_file_object_block.call
                 @new_file_name = @email_file_object.local_file_name unless @email_file_object.nil?
