@@ -69,6 +69,7 @@ class MapReduce
               set_total
             elsif !@update_file_object_block.nil?
               @email_file_object.completed_at = Time.now
+              @email_file_object.percent_complete = 100
               @email_file_object.save
               @new_file_name = ""
               @email_file_object = nil
