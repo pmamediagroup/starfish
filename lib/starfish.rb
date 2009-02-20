@@ -65,7 +65,7 @@ class Starfish
     ts = Rinda::TupleSpace.new
     begin
       ts.write([:name, uniq.intern, object, @uniq])
-      ring_server = Rinda::RingServer.new(ts)
+      @ring_server = Rinda::RingServer.new(ts)
     rescue Errno::EADDRINUSE
       ts = RingFinger.primary
       ts.write([:name, uniq.intern, object, @uniq])
