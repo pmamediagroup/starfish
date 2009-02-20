@@ -69,6 +69,9 @@ class Starfish
     rescue Errno::EADDRINUSE
       ts = RingFinger.primary
       ts.write([:name, uniq.intern, object, @uniq])
+      $stderr.puts "using primary RingFinger instead of new one"
+    rescue Exception => e
+      $stderr.puts "error starting new Ringserver " + e.inspect
     end
 
     File.open(@@options[:pid] || "#{Dir.tmpdir}/starfish-#{uniq}.pid","w"){|f|f<<Process.pid}
